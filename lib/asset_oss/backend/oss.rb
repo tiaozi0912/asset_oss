@@ -1,41 +1,42 @@
-require 'aws/s3'
+require 'aliyun/oss'
 
 module AssetID
-  class S3
+  class OSS
   
-    def self.s3_config
-      @@config ||= YAML.load_file(File.join(Rails.root, "config/asset_id.yml"))[Rails.env] rescue nil || {}
+    def self.oss_config
+      @@config ||= YAML.load_file(File.join(Rails.root, "config/asset_oss.yml"))[Rails.env] rescue nil || {}
     end
   
-    def self.connect_to_s3
-      AWS::S3::Base.establish_connection!(
-        :access_key_id => s3_config['access_key_id'],
-        :secret_access_key => s3_config['secret_access_key']
+    def self.connect_to_oss
+      Aliyun::OSS::Base.establish_connection!(
+        :server => oss_config['host'] || Aliyun::OSS::DEFAULT_HOST,
+        :access_key_id => oss_config['access_key_id'],
+        :secret_access_key => oss_config['secret_access_key']
       )
     end
   
-    def self.s3_permissions
+    def self.oss_permissions
       :public_read
     end
   
-    def self.s3_bucket
-      s3_config['bucket']
+    def self.oss_bucket
+      oss_config['bucket']
     end
     
-    def self.s3_folder
-      s3_config['folder']
+    def self.oss_folder
+      oss_config['folder']
     end
     
-    def self.s3_prefix
-      s3_config['prefix'] || s3_bucket_url
+    def self.oss_prefix
+      oss_config['prefix'] || oss_bucket_url
     end
     
-    def self.s3_bucket_url
-      "http://#{s3_bucket}.s3.amazonaws.com#{s3_folder ? "/#{s3_folder}" : '' }"
+    def self.oss_bucket_url
+      "http://#{oss_bucket}.oss.aliyuncs.com#{oss_folder ? "/#{oss_folder}" : '' }"
     end
     
     def self.full_path(asset)
-      s3_folder ? "/#{s3_folder}#{asset.fingerprint}" : asset.fingerprint
+      oss_folder ? "/#{oss_folder}#{asset.fingerprint}" : asset.fingerprint
     end
     
     def self.upload(options={})
@@ -44,7 +45,9 @@ module AssetID
       assets = Asset.find
       return if assets.empty?
     
-      connect_to_s3
+      connect_to_oss
+
+      Aliyun::OSS::Bucket.create(oss_bucket, :access => oss_permissions)
     
       assets.each do |asset|
       
@@ -52,10 +55,9 @@ module AssetID
       
         headers = {
           :content_type => asset.mime_type,
-          :access => s3_permissions,
         }.merge(asset.cache_headers)
         
-        asset.replace_css_images!(:prefix => s3_prefix) if asset.css?
+        asset.replace_css_images!(:prefix => oss_prefix) if asset.css?
         
         if asset.gzip_type?
           headers.merge!(asset.gzip_headers)
@@ -68,10 +70,10 @@ module AssetID
         end
         
         unless options[:dry_run]
-          res = AWS::S3::S3Object.store(
+          res = Aliyun::OSS::OSSObject.store(
             full_path(asset),
             asset.data,
-            s3_bucket,
+            oss_bucket,
             headers
           ) 
           puts "  - Response: #{res.inspect}" if options[:debug]
