@@ -53,7 +53,7 @@ Optionally create a rake task in <code>lib/tasks/asset_oss.rake</code> to
 perform the upload for use in your deploy scripts
 
 <pre><code>namespace :asset do
-  namespace :id do
+  namespace :oss do
     
     desc "uploads the current assets to aliyun oss with stamped ids"
     task :upload do
