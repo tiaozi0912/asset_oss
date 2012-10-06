@@ -1,14 +1,14 @@
-h1. Asset ID - Asset stamping and uploading to S3 for Rails
+h1. Asset OSS - Asset stamping and uploading to Aliyun OSS for Rails
 
 h2. About
 
-Uploads static assets to Amazon S3 with unique identifiers encoded into the path of the asset. 
+Uploads static assets to Aliyun OSS with unique identifiers encoded into the path of the asset. 
 
 Only works with Rails 3.x because Rails 3 makes doing this sort of thing a lot easier and
 that is all I needed it for.
 
 This library takes standard Rails asset paths such as <code>/stylesheets/main.css?1288717704</code> and converts them
-into <code>http://my_bucket.s3.amazonaws.com/stylesheets/main-id-95df8d9bf5237ad08df3115ee74dcb10.css</code>.
+into <code>http://my_bucket.oss.aliyuncs.com/stylesheets/main-id-95df8d9bf5237ad08df3115ee74dcb10.css</code>.
 
 It uses an MD5 hash of the file contents to produce the id so the same asset will always have the same ID.
 
@@ -26,20 +26,20 @@ h2. Usage
 
 Add the gem to your <code>Gemfile</code>
 
-<code>gem "asset_id"</code>
+<code>gem "asset_oss"</code>
 
-Configure <code>config/environments/production.rb</code> to use Amazon S3 as the asset host
+Configure <code>config/environments/production.rb</code> to use Aliyun OSS as the asset host
 and to use the id-stamped asset paths in helpers
 
 <pre><code>config.action_controller.asset_host = Proc.new do |source|
- 'http://my_bucket.s3.amazonaws.com'
+ 'http://my_bucket.oss.aliyuncs.com'
 end
 config.action_controller.asset_path = Proc.new do |source|
- AssetID::Asset.fingerprint(source)
+ AssetOSS::Asset.fingerprint(source)
 end
 </code></pre>
 
-Add your Amazon S3 configuration details to <code>config/asset_id.yml</code>
+Add your Aliyun OSS configuration details to <code>config/asset_oss.yml</code>
 
 <pre><code>production:
   access_key_id: 'MY_ACCESS_KEY'
@@ -47,17 +47,17 @@ Add your Amazon S3 configuration details to <code>config/asset_id.yml</code>
   bucket: "my_live_bucket"
 </code></pre>
 
-Optionally create a rake task in <code>lib/tasks/asset_id_tasks.rake</code> to
+Optionally create a rake task in <code>lib/tasks/asset_oss.rake</code> to
 perform the upload for use in your deploy scripts
 
 <pre><code>namespace :asset do
   namespace :id do
     
-    desc "uploads the current assets to s3 with stamped ids"
+    desc "uploads the current assets to aliyun oss with stamped ids"
     task :upload do
-      AWS::S3::DEFAULT_HOST.replace "s3-eu-west-1.amazonaws.com" # If using EU bucket
-      AssetID::Asset.asset_paths += ['favicon.png'] # Configure additional asset paths
-      AssetID::S3.upload
+      Aliyun::OSS::DEFAULT_HOST.replace "oss-internal.aliyuncs.com"
+      AssetOSS::Asset.asset_paths += ['favicon.png'] # Configure additional asset paths
+      AssetOSS::OSS.upload
     end
     
   end
@@ -69,30 +69,20 @@ h2. SSL configuration
 If you want to use the SSL host in your configuration you can do so in <code>config/environments/production.rb</code>
 
 <pre><code>config.action_controller.asset_host = Proc.new do |source|
-  request.ssl? 'https://my_bucket.s3.amazonaws.com' : 'http://my_bucket.s3.amazonaws.com'
+  request.ssl? 'https://my_bucket.oss.aliyuncs.com' : 'http://my_bucket.oss.aliyuncs.com'
 end
 </code></pre>
 
 h2. CSS Images
 
-By default any relative CSS images that match files on the filesystem are converted to AssetID paths as well.  
+By default any relative CSS images that match files on the filesystem are converted to AssetOSS paths as well.  
 
-For S3, if you don't specify a <code>prefix</code> it will use the <code>http://</code> bucket URL by default.  You can override this in <code>config/asset_id.yml</code>.  For example if you wanted to use the <code>https://</code> url:
+For aliyun oss, if you don't specify a <code>prefix</code> it will use the <code>http://</code> bucket URL by default.  You can override this in <code>config/asset_oss.yml</code>.  For example if you wanted to use the <code>https://</code> url:
 
 <pre><code>production:
+  host: 'oss-internal.aliyuncs.com'
   access_key_id: 'MY_ACCESS_KEY'
   secret_access_key: 'MY_ACCESS_SECRET'
   bucket: "my_live_bucket"
-  prefix: "https://my_bucket.s3.amazonaws.com"
+  prefix: "https://my_bucket.oss.aliyuncs.com"
 </code></pre>
-
-h2. Using Amazon CloudFront Content Delivery Network (CDN)
-
-To use Amazon CloudFront as a CDN for your assets all you need to do is "create a CloudFront distribution":http://docs.amazonwebservices.com/AmazonCloudFront/latest/GettingStartedGuide/ for the bucket you have defined your configuration and then substitute your unique CloudFront domain name in <code>config/environments/production.rb</code>
-
-<pre><code>config.action_controller.asset_host = Proc.new do |source|
- 'http://my_domain.d374pjuyllr15e.cloudfront.net'
-end
-</code></pre>
-
-SSL works fine here as well.
