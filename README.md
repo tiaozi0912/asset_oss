@@ -38,3 +38,7 @@ namespace :asset do
   end
 end
 ```
+
+其它
+---
+也许可以通过修改Rails `config.assets.prefix`实现缓存过期,记得prefix要是assets开头,同时修改`AssetOSS::Asset.asset_paths`

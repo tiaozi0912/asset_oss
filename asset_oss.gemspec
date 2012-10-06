@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.date = %q{2011-05-15}
   s.description = %q{asset_oss is a library for uploading static assets to Amazon S3.}
   s.email = %q{moomerman@gmail.com}
-  s.files = ["LICENSE", "README.textile","lib/asset_oss.rb"] + Dir.glob('lib/asset_oss/*.rb') + Dir.glob('lib/asset_oss/backend/*.rb')
+  s.files = ["LICENSE", "README.md", "README_EN.textile","lib/asset_oss.rb"] + Dir.glob('lib/asset_oss/*.rb') + Dir.glob('lib/asset_oss/backend/*.rb')
   s.has_rdoc = false
   s.homepage = %q{http://github.com/mangege/asset_oss}
   s.rdoc_options = ["--inline-source", "--charset=UTF-8"]

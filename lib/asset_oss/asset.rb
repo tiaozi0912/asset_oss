@@ -92,7 +92,7 @@ module AssetOSS
     
     def fingerprint
       p = relative_path
-      return p if relative_path =~ /^\/assets\//
+      return p if relative_path =~ /^\/assets.*\//
       File.join File.dirname(p), "#{File.basename(p, File.extname(p))}-id-#{md5}#{File.extname(p)}"
     end
     
