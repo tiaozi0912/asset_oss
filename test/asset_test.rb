@@ -6,13 +6,13 @@ require 'rubygems'
 class AssetTest < Test::Unit::TestCase
   
   def setup
-    AssetID::Cache.empty
-    @asset = AssetID::Asset.find(['favicon.ico']).first
-    AssetID::Cache.empty
+    AssetOSS::Cache.empty
+    @asset = AssetOSS::Asset.find(['favicon.ico']).first
+    AssetOSS::Cache.empty
   end
   
   def test_find_assets_in_paths
-    assets = AssetID::Asset.find(['favicon.ico', 'images', 'javascripts', 'stylesheets'])
+    assets = AssetOSS::Asset.find(['favicon.ico', 'images', 'javascripts', 'stylesheets'])
     assert_equal 4, assets.count
   end
   
@@ -33,20 +33,20 @@ class AssetTest < Test::Unit::TestCase
   end
   
   def test_gzip
-    asset = AssetID::Asset.find(['javascripts']).first
+    asset = AssetOSS::Asset.find(['javascripts']).first
     raw = asset.data
     asset.gzip!
     assert asset.data != raw, 'Data is not Gzipped'
   end
   
   def test_parse_css
-    asset = AssetID::Asset.find(['stylesheets']).first
+    asset = AssetOSS::Asset.find(['stylesheets']).first
     asset.replace_css_images!
     assert_equal 'body { background: url(/images/thundercats-id-982f2a3a4d905189959e848badb4f55b.jpg); }', asset.data
   end
   
   def test_parse_css_with_prefix
-    asset = AssetID::Asset.find(['stylesheets']).first
+    asset = AssetOSS::Asset.find(['stylesheets']).first
     asset.replace_css_images!(:prefix => 'https://example.com')
     assert_equal 'body { background: url(https://example.com/images/thundercats-id-982f2a3a4d905189959e848badb4f55b.jpg); }', asset.data
   end

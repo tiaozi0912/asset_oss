@@ -2,6 +2,8 @@ h1. Asset OSS - Asset stamping and uploading to Aliyun OSS for Rails
 
 h2. About
 
+基于asset_id修改,aset_sync也许是更好的选择
+
 Uploads static assets to Aliyun OSS with unique identifiers encoded into the path of the asset. 
 
 Only works with Rails 3.x because Rails 3 makes doing this sort of thing a lot easier and
@@ -56,7 +58,7 @@ perform the upload for use in your deploy scripts
     desc "uploads the current assets to aliyun oss with stamped ids"
     task :upload do
       Aliyun::OSS::DEFAULT_HOST.replace "oss-internal.aliyuncs.com"
-      AssetOSS::Asset.asset_paths += ['favicon.png'] # Configure additional asset paths
+      AssetOSS::Asset.asset_paths += ['assets'] # Configure additional asset paths
       AssetOSS::OSS.upload
     end
     

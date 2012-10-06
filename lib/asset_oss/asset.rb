@@ -3,13 +3,14 @@ require 'mime/types'
 require 'time'
 require 'zlib'
 
-module AssetID
+module AssetOSS
   class Asset
     
     DEFAULT_ASSET_PATHS = ['favicon.ico', 'images', 'javascripts', 'stylesheets']
     @@asset_paths = DEFAULT_ASSET_PATHS
     
-    DEFAULT_GZIP_TYPES = ['text/css', 'application/javascript']
+    #DEFAULT_GZIP_TYPES = ['text/css', 'application/javascript']
+    DEFAULT_GZIP_TYPES = []
     @@gzip_types = DEFAULT_GZIP_TYPES
     
     @@debug = false
@@ -43,9 +44,10 @@ module AssetID
       paths.inject([]) {|assets, path|
         path = File.join Rails.root, 'public', path
         a = Asset.new(path)
-        assets << a if a.is_file? and !a.cache_hit?
+        #TODO 暂时不上传gz文件,相好解决ie6 gzip的问题再说
+        assets << a if a.is_file? and !a.cache_hit? and !a.gz_file?
         assets += Dir.glob(path+'/**/*').inject([]) {|m, file|
-          a = Asset.new(file); m << a if a.is_file? and !a.cache_hit?; m 
+          a = Asset.new(file); m << a if a.is_file? and !a.cache_hit? and !a.gz_file?; m 
         }
       }
     end
@@ -154,8 +156,12 @@ module AssetID
     
     def cache_hit?
       return false if @@nocache or Cache.miss? self
-      puts "AssetID: #{relative_path} - Cache Hit" 
+      puts "AssetOSS: #{relative_path} - Cache Hit" 
       return true 
+    end
+
+    def gz_file?
+      path =~ /\.gz$/
     end
     
   end

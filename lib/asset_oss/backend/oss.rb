@@ -1,6 +1,6 @@
 require 'aliyun/oss'
 
-module AssetID
+module AssetOSS
   class OSS
   
     def self.oss_config
@@ -51,7 +51,7 @@ module AssetID
     
       assets.each do |asset|
       
-        puts "AssetID: #{asset.relative_path}" if options[:debug]
+        puts "AssetOSS: #{asset.relative_path}" if options[:debug]
       
         headers = {
           :content_type => asset.mime_type,

@@ -1,6 +1,6 @@
 require 'yaml'
 
-module AssetID
+module AssetOSS
   class Cache
     
     def self.empty
