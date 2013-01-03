@@ -20,7 +20,7 @@ Asset OSS -  上传Rails项目静态文件到Aliyun OSS
 production:
   host: 'oss.aliyuncs.com'
   access_key_id: 'MY_ACCESS_KEY'
-  cret_access_key: 'MY_ACCESS_SECRET'
+  secret_access_key: 'MY_ACCESS_SECRET'
   bucket: "my_live_bucket"
 ```
 
