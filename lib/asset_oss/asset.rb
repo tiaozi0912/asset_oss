@@ -9,8 +9,7 @@ module AssetOSS
     DEFAULT_ASSET_PATHS = ['favicon.ico', 'images', 'javascripts', 'stylesheets']
     @@asset_paths = DEFAULT_ASSET_PATHS
     
-    #DEFAULT_GZIP_TYPES = ['text/css', 'application/javascript']
-    DEFAULT_GZIP_TYPES = []
+    DEFAULT_GZIP_TYPES = ['text/css', 'application/javascript']
     @@gzip_types = DEFAULT_GZIP_TYPES
     
     @@debug = false
@@ -44,10 +43,10 @@ module AssetOSS
       paths.inject([]) {|assets, path|
         path = File.join Rails.root, 'public', path
         a = Asset.new(path)
-        #TODO 暂时不上传gz文件,相好解决ie6 gzip的问题再说
-        assets << a if a.is_file? and !a.cache_hit? and !a.gz_file?
+        
+        assets << a if a.is_file? and !a.cache_hit?
         assets += Dir.glob(path+'/**/*').inject([]) {|m, file|
-          a = Asset.new(file); m << a if a.is_file? and !a.cache_hit? and !a.gz_file?; m 
+          a = Asset.new(file); m << a if a.is_file? and !a.cache_hit?; m 
         }
       }
     end
@@ -104,6 +103,7 @@ module AssetOSS
       mime_type == 'text/css'
     end
     
+    # Replace the url() in the css with the actual host asset url
     def replace_css_images!(options={})
       options[:prefix] ||= ''
       # adapted from https://github.com/blakink/asset_id
