@@ -39,6 +39,9 @@ module AssetOSS
       oss_folder ? "/#{oss_folder}#{asset.fingerprint}" : asset.fingerprint
     end
     
+    # Main method. Usually invoked from a rake task
+    # Create or update object in OSS
+    # @todo: find the assets deleted locally and delete them in OSS
     def self.upload(options={})
       Asset.init(:debug => options[:debug], :nofingerprint => options[:nofingerprint])
       
@@ -68,6 +71,8 @@ module AssetOSS
           puts "  - Uploading: #{full_path(asset)} [#{asset.data.size} bytes]"
           puts "  - Headers: #{headers.inspect}"
         end
+
+        clean
         
         unless options[:dry_run]
           res = Aliyun::OSS::OSSObject.store(
@@ -81,6 +86,18 @@ module AssetOSS
       end
     
       Cache.save! unless options[:dry_run]
+    end
+
+    def self.clean(options={})
+      fingerprints = Cache.fingerprints_to_delete
+      return if fingerprints.empty?
+
+      fingerprints.each do |f|
+        Aliyun::OSS::OSSObject.delete f, oss_bucket
+        puts "AssetOSS: delete #{f}" if options[:debug]
+      end
+
+      Cache.fingerprints_to_delete= []
     end
   
   end
