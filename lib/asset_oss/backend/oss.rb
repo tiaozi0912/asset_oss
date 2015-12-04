@@ -75,6 +75,7 @@ module AssetOSS
         clean
         
         unless options[:dry_run]
+
           res = Aliyun::OSS::OSSObject.store(
             full_path(asset),
             asset.data,
@@ -82,10 +83,13 @@ module AssetOSS
             headers
           ) 
           puts "  - Response: #{res.inspect}" if options[:debug]
+          
+          # Save to cache once the asset uploaded to OSS successfully
+          Cache.save! unless options[:dry_run]
         end
       end
     
-      Cache.save! unless options[:dry_run]
+      #Cache.save! unless options[:dry_run]
     end
 
     def self.clean(options={})
